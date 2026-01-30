@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>万歌AIGC 数字员工 | 管理门户</title>
+    <!-- Tailwind CSS v3 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <!-- 字体 -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <!-- 配置 Tailwind - SpaceX Brand -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'spacex': {
+                            'black': '#000000',
+                            'white': '#FFFFFF',
+                            'blue': '#005288',
+                            'gray': '#666666',
+                            'light-gray': '#F5F5F5',
+                            'dark-gray': '#333333',
+                            'success': '#28A745',
+                            'warning': '#FFC107',
+                            'danger': '#DC3545',
+                            'info': '#17A2B8'
+                        }
+                    },
+                    fontFamily: {
+                        'sans': ['Inter', 'Noto Sans SC', 'Helvetica Neue', 'Arial', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        'spacex': '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+                        'spacex-hover': '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+                        'spacex-card': '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'fade-in': 'fadeIn 0.5s ease-out forwards',
+                        'slide-up': 'slideUp 0.5s ease-out forwards',
+                        'float': 'float 3s ease-in-out infinite'
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        },
+                        slideUp: {
+                            '0%': { transform: 'translateY(20px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' },
+                        },
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-10px)' },
+                        }
+                    },
+                    borderRadius: {
+                        'spacex': '4px'
+                    }
+                },
+            }
+        }
+    </script>
+    <!-- 自定义工具类 -->
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .btn-spacex {
+                @apply px-6 py-3 rounded-spacex font-medium transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2;
+            }
+            .btn-primary {
+                @apply btn-spacex bg-spacex-blue text-white hover:bg-spacex-blue/90 focus:ring-spacex-blue;
+            }
+            .btn-secondary {
+                @apply btn-spacex bg-transparent border border-spacex-blue text-spacex-blue hover:bg-spacex-blue/10 focus:ring-spacex-blue;
+            }
+            .btn-dark {
+                @apply btn-spacex bg-spacex-black text-white hover:bg-spacex-dark-gray focus:ring-spacex-black;
+            }
+            .input-spacex {
+                @apply w-full px-4 py-3 rounded-spacex border border-gray-300 focus:outline-none focus:ring-2 focus:ring-spacex-blue focus:border-spacex-blue transition-all duration-300;
+            }
+            .card-spacex {
+                @apply bg-white rounded-spacex shadow-spacex p-6 transition-all duration-300;
+            }
+            .card-spacex-hover {
+                @apply card-spacex hover:shadow-spacex-hover;
+            }
+            .badge-spacex {
+                @apply px-3 py-1 rounded-spacex text-sm font-medium;
+            }
+            .text-gradient {
+                @apply bg-clip-text text-transparent bg-gradient-to-r from-spacex-blue to-spacex-info;
+            }
+        }
+    </style>
+</head>
+<body class="bg-spacex-light-gray min-h-screen font-sans">
+    <!-- 顶部导航栏 - SpaceX Style -->
+    <nav class="bg-spacex-black text-white px-8 py-4 fixed top-0 left-0 right-0 z-50">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <div class="flex items-center space-x-4">
+                <!-- 万歌AIGC Logo -->
+                <div class="flex items-center space-x-1">
+                    <span class="text-3xl font-bold text-white">万歌</span>
+                    <span class="text-3xl font-bold text-spacex-blue">AIGC</span>
+                </div>
+                <div class="hidden md:block border-l border-gray-600 pl-4 ml-4">
+                    <h1 class="text-lg font-semibold">数字员工管理</h1>
+                    <p class="text-xs text-gray-400">Digital Workforce Portal</p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-4">
+                <button class="btn-secondary text-sm" onclick="exportData()">
+                    <i class="fa fa-download mr-2"></i>导出数据
+                </button>
+                <button class="btn-primary text-sm" onclick="openAddEmployeeModal()">
+                    <i class="fa fa-plus mr-2"></i>添加员工
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主容器 -->
+    <div class="max-w-7xl mx-auto px-6 sm:px-8 lg:px-10 pt-24 pb-16">
+        <!-- 页面标题 - SpaceX Style -->
+        <div class="mb-10 bg-spacex-black rounded-spacex p-8 text-white animate-fade-in">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center">
+                <div>
+                    <h1 class="text-4xl font-bold mb-2">数字员工管理</h1>
+                    <p class="text-gray-400">AI驱动的数字员工队伍管理系统</p>
+                </div>
+                <div class="mt-6 md:mt-0 flex items-center space-x-6">
+                    <div class="text-center">
+                        <p class="text-3xl font-bold text-spacex-blue" id="totalEmployees">0</p>
+                        <p class="text-xs text-gray-400">员工总数</p>
+                    </div>
+                    <div class="w-px h-12 bg-gray-700"></div>
+                    <div class="text-center">
+                        <p class="text-3xl font-bold text-spacex-success" id="activeEmployees">0</p>
+                        <p class="text-xs text-gray-400">活跃员工</p>
+                    </div>
+                    <div class="w-px h-12 bg-gray-700"></div>
+                    <div class="text-center">
+                        <p class="text-3xl font-bold text-spacex-warning" id="departmentCount">0</p>
+                        <p class="text-xs text-gray-400">部门数量</p>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-6 pt-6 border-t border-gray-800 flex flex-wrap gap-6 text-sm">
+                <div class="flex items-center space-x-2">
+                    <i class="fa fa-clock-o text-spacex-blue"></i>
+                    <span class="text-gray-400">最后同步: <span id="lastSynced" class="text-white"></span></span>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <i class="fa fa-server text-spacex-success"></i>
+                    <span class="text-gray-400">系统状态: <span class="text-spacex-success">在线</span></span>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <i class="fa fa-calendar text-spacex-info"></i>
+                    <span class="text-gray-400">当前日期: <span id="currentDate" class="text-white"></span></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 员工管理卡片 -->
+        <div class="bg-white rounded-spacex shadow-spacex overflow-hidden">
+            <div class="bg-spacex-black p-6">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center">
+                    <div>
+                        <h2 class="text-xl font-bold text-white">员工目录</h2>
+                        <p class="text-sm text-gray-400">管理和查看您的数字员工队伍</p>
+                    </div>
+                    <div class="w-full sm:w-auto mt-4 sm:mt-0">
+                        <div class="relative">
+                            <input type="text" placeholder="搜索员工..." id="searchInput" onkeyup="searchEmployees()" class="w-full sm:w-80 px-4 py-2 rounded-spacex border border-gray-600 bg-gray-900 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-spacex-blue focus:border-spacex-blue">
+                            <i class="fa fa-search absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 员工列表 -->
+            <div class="p-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="employeeGrid">
+                    <!-- 员工卡片将通过JavaScript动态添加 -->
+                </div>
+
+                <!-- 空状态 -->
+                <div class="text-center py-16 px-4" id="emptyState">
+                    <div class="w-20 h-20 mx-auto mb-6 rounded-full bg-spacex-light-gray flex items-center justify-center animate-float">
+                        <i class="fa fa-user-plus text-3xl text-spacex-blue"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-spacex-black mb-3">未找到员工</h3>
+                    <p class="text-spacex-gray mb-6">点击"添加员工"按钮开始构建您的数字员工队伍</p>
+                    <button class="btn-primary" onclick="openAddEmployeeModal()">
+                        <i class="fa fa-plus mr-2"></i>添加第一位员工
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 添加员工模态框 -->
+    <div class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 hidden" id="addEmployeeModal">
+        <div class="bg-white rounded-spacex shadow-spacex-card max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <div class="bg-spacex-black p-6">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h2 class="text-xl font-bold text-white">添加新员工</h2>
+                        <p class="text-sm text-gray-400">创建新的数字员工</p>
+                    </div>
+                    <button class="text-gray-400 hover:text-white transition-colors" onclick="closeModal('addEmployeeModal')">
+                        <i class="fa fa-times text-xl"></i>
+                    </button>
+                </div>
+            </div>
+            <form id="addEmployeeForm" class="p-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div>
+                        <label for="employeeName" class="block text-sm font-medium text-spacex-gray mb-2">姓名 <span class="text-spacex-blue">*</span></label>
+                        <input type="text" id="employeeName" required class="input-spacex">
+                    </div>
+                    <div>
+                        <label for="employeePosition" class="block text-sm font-medium text-spacex-gray mb-2">职位 <span class="text-spacex-blue">*</span></label>
+                        <input type="text" id="employeePosition" required class="input-spacex">
+                    </div>
+                    <div>
+                        <label for="employeeDepartment" class="block text-sm font-medium text-spacex-gray mb-2">部门 <span class="text-spacex-blue">*</span></label>
+                        <select id="employeeDepartment" required class="input-spacex">
+                            <option value="">选择部门</option>
+                            <option value="火星殖民事业部">火星殖民事业部</option>
+                            <option value="AI研究部门">AI研究部门</option>
+                            <option value="电动汽车设计">电动汽车设计</option>
+                            <option value="可再生能源部门">可再生能源部门</option>
+                            <option value="火箭技术部门">火箭技术部门</option>
+                            <option value="其他">其他</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="employeeSalary" class="block text-sm font-medium text-spacex-gray mb-2">薪酬 <span class="text-spacex-blue">*</span></label>
+                        <input type="text" id="employeeSalary" required class="input-spacex">
+                    </div>
+                </div>
+                <div class="mb-6">
+                    <label for="employeeSkills" class="block text-sm font-medium text-spacex-gray mb-2">核心技能（逗号分隔）</label>
+                    <input type="text" id="employeeSkills" placeholder="例如：火箭发射与回收，电动汽车设计" class="input-spacex">
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div>
+                        <label for="employeeEducation" class="block text-sm font-medium text-spacex-gray mb-2">教育背景</label>
+                        <input type="text" id="employeeEducation" class="input-spacex">
+                    </div>
+                    <div>
+                        <label for="employeeExperience" class="block text-sm font-medium text-spacex-gray mb-2">工作经历（分号分隔）</label>
+                        <input type="text" id="employeeExperience" placeholder="例如：特斯拉：CEO；SpaceX：CEO" class="input-spacex">
+                    </div>
+                </div>
+                <div class="mb-6">
+                    <label for="employeeNotes" class="block text-sm font-medium text-spacex-gray mb-2">备注</label>
+                    <textarea id="employeeNotes" placeholder="添加员工备注" rows="4" class="input-spacex"></textarea>
+                </div>
+                <div class="flex justify-end space-x-4 pt-6 border-t border-gray-200">
+                    <button type="button" class="btn-secondary" onclick="closeModal('addEmployeeModal')">取消</button>
+                    <button type="submit" class="btn-primary">
+                        <i class="fa fa-plus mr-2"></i>创建员工
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 查看员工模态框 -->
+    <div class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 hidden" id="viewEmployeeModal">
+        <div class="bg-white rounded-spacex shadow-spacex-card max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <div class="bg-spacex-black p-6">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h2 class="text-xl font-bold text-white">员工详情</h2>
+                        <p class="text-sm text-gray-400">数字员工信息</p>
+                    </div>
+                    <button class="text-gray-400 hover:text-white transition-colors" onclick="closeModal('viewEmployeeModal')">
+                        <i class="fa fa-times text-xl"></i>
+                    </button>
+                </div>
+            </div>
+            <div id="employeeDetails" class="p-6">
+                <!-- 员工详情将通过JavaScript动态添加 -->
+            </div>
+            <div class="flex justify-end p-6 border-t border-gray-200 space-x-4">
+                <button type="button" class="btn-secondary" onclick="editEmployee('')">
+                    <i class="fa fa-pencil mr-2"></i>编辑
+                </button>
+                <button type="button" class="btn-dark" onclick="closeModal('viewEmployeeModal')">
+                    <i class="fa fa-times mr-2"></i>关闭
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 员工数据管理
+        const EmployeeManager = {
+            getAllEmployees: function() {
+                try {
+                    const employees = localStorage.getItem('digitalEmployees');
+                    return employees ? JSON.parse(employees) : [];
+                } catch (error) {
+                    console.error('获取员工数据失败:', error);
+                    return [];
+                }
+            },
+
+            saveEmployees: function(employees) {
+                try {
+                    localStorage.setItem('digitalEmployees', JSON.stringify(employees));
+                    return true;
+                } catch (error) {
+                    console.error('保存员工数据失败:', error);
+                    return false;
+                }
+            },
+
+            addEmployee: function(employee) {
+                const employees = this.getAllEmployees();
+                const newEmployee = {
+                    id: Date.now().toString(),
+                    createdAt: new Date().toISOString(),
+                    ...employee
+                };
+                employees.push(newEmployee);
+                return this.saveEmployees(employees);
+            },
+
+            getEmployee: function(id) {
+                const employees = this.getAllEmployees();
+                return employees.find(employee => employee.id === id);
+            },
+
+            updateEmployee: function(id, updates) {
+                const employees = this.getAllEmployees();
+                const index = employees.findIndex(employee => employee.id === id);
+                if (index !== -1) {
+                    employees[index] = { ...employees[index], ...updates };
+                    return this.saveEmployees(employees);
+                }
+                return false;
+            },
+
+            deleteEmployee: function(id) {
+                const employees = this.getAllEmployees();
+                const filteredEmployees = employees.filter(employee => employee.id !== id);
+                return this.saveEmployees(filteredEmployees);
+            },
+
+            exportData: function() {
+                const employees = this.getAllEmployees();
+                const dataStr = JSON.stringify(employees, null, 2);
+                const dataBlob = new Blob([dataStr], { type: 'application/json' });
+                const url = URL.createObjectURL(dataBlob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `spacex_digital_employees_${new Date().toISOString().split('T')[0]}.json`;
+                link.click();
+                URL.revokeObjectURL(url);
+            }
+        };
+
+        // 初始化页面
+        function initPage() {
+            loadEmployees();
+            updateStats();
+            checkAndCreateElonEmployee();
+        }
+
+        // 检查并创建马斯克员工
+        function checkAndCreateElonEmployee() {
+            const employees = EmployeeManager.getAllEmployees();
+            const hasElon = employees.some(employee => employee.name === 'Elon Musk');
+            
+            if (!hasElon) {
+                const elonEmployee = {
+                    name: 'Elon Musk',
+                    position: '首席技术官（CTO）',
+                    department: '火箭技术部门',
+                    salary: '1美元+股票期权',
+                    startDate: '随时',
+                    skills: ['火箭发射与回收技术', '电动汽车设计与制造', '可再生能源系统', '人工智能与脑机接口', '商业战略与危机管理'],
+                    education: '宾夕法尼亚大学，经济学和物理学双学位',
+                    experience: ['Zip2：联合创始人', 'PayPal：联合创始人', '特斯拉：CEO', 'SpaceX：CEO', 'Neuralink：创始人'],
+                    benefits: ['可随时发射火箭', '每周火箭发射观摩', '创新空间和资源'],
+                    notes: '对工作充满热情，经常在工厂里睡地板，连续工作几天几夜。',
+                    status: 'active'
+                };
+                EmployeeManager.addEmployee(elonEmployee);
+                loadEmployees();
+                updateStats();
+            }
+        }
+
+        // 加载员工列表
+        function loadEmployees() {
+            const employees = EmployeeManager.getAllEmployees();
+            const employeeGrid = document.getElementById('employeeGrid');
+            const emptyState = document.getElementById('emptyState');
+            
+            if (employees.length > 0) {
+                employeeGrid.innerHTML = '';
+                emptyState.style.display = 'none';
+                
+                employees.forEach((employee, index) => {
+                    const employeeCard = createEmployeeCard(employee, index);
+                    employeeGrid.appendChild(employeeCard);
+                });
+            } else {
+                employeeGrid.innerHTML = '';
+                emptyState.style.display = 'block';
+            }
+        }
+
+        // 创建员工卡片 - SpaceX Style
+        function createEmployeeCard(employee, index) {
+            const card = document.createElement('div');
+            card.className = 'bg-white rounded-spacex shadow-spacex p-6 border-l-4 border-spacex-blue card-spacex-hover animate-fade-in';
+            card.style.animationDelay = `${index * 0.1}s`;
+            
+            const initial = employee.name.charAt(0).toUpperCase();
+            
+            card.innerHTML = `
+                <div class="flex items-start space-x-4 mb-4">
+                    <div class="w-14 h-14 rounded-spacex bg-spacex-black flex items-center justify-center text-2xl font-bold text-white">
+                        ${initial}
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <h3 class="text-lg font-bold text-spacex-black mb-1 truncate">${employee.name}</h3>
+                        <p class="text-spacex-blue font-medium text-sm mb-1">${employee.position}</p>
+                        <p class="text-spacex-gray text-sm">${employee.department}</p>
+                    </div>
+                </div>
+                <div class="pt-4 border-t border-gray-100">
+                    <div class="flex justify-between items-center mb-3">
+                        <span class="text-sm text-spacex-gray">薪酬:</span>
+                        <span class="text-sm font-medium text-spacex-black">${employee.salary}</span>
+                    </div>
+                    <div class="flex space-x-2">
+                        <button class="flex-1 px-3 py-2 bg-spacex-black text-white rounded-spacex text-sm font-medium hover:bg-spacex-dark-gray transition-colors" onclick="viewEmployee('${employee.id}')">
+                            <i class="fa fa-eye mr-1"></i>查看
+                        </button>
+                        <button class="px-3 py-2 border border-spacex-blue text-spacex-blue rounded-spacex text-sm font-medium hover:bg-spacex-blue/10 transition-colors" onclick="editEmployee('${employee.id}')">
+                            <i class="fa fa-pencil"></i>
+                        </button>
+                        <button class="px-3 py-2 border border-spacex-danger text-spacex-danger rounded-spacex text-sm font-medium hover:bg-spacex-danger/10 transition-colors" onclick="deleteEmployee('${employee.id}')">
+                            <i class="fa fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            return card;
+        }
+
+        // 更新统计数据
+        function updateStats() {
+            const employees = EmployeeManager.getAllEmployees();
+            const totalEmployees = employees.length;
+            const activeEmployees = employees.filter(emp => emp.status !== 'inactive').length;
+            const departments = [...new Set(employees.map(emp => emp.department))].length;
+            
+            document.getElementById('totalEmployees').textContent = totalEmployees;
+            document.getElementById('activeEmployees').textContent = activeEmployees;
+            document.getElementById('departmentCount').textContent = departments;
+        }
+
+        // 打开添加员工模态框
+        function openAddEmployeeModal() {
+            document.getElementById('addEmployeeModal').classList.remove('hidden');
+        }
+
+        // 关闭模态框
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.add('hidden');
+        }
+
+        // 查看员工详情 - SpaceX Style
+        function viewEmployee(id) {
+            const employee = EmployeeManager.getEmployee(id);
+            if (employee) {
+                const detailsContainer = document.getElementById('employeeDetails');
+                detailsContainer.innerHTML = `
+                    <div class="space-y-6">
+                        <div class="bg-spacex-light-gray rounded-spacex p-6">
+                            <div class="flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-6">
+                                <div class="w-20 h-20 rounded-spacex bg-spacex-black flex items-center justify-center text-3xl font-bold text-white">
+                                    ${employee.name.charAt(0).toUpperCase()}
+                                </div>
+                                <div class="text-center md:text-left">
+                                    <h3 class="text-2xl font-bold text-spacex-black mb-1">${employee.name}</h3>
+                                    <p class="text-spacex-blue font-medium mb-2">${employee.position}</p>
+                                    <div class="flex flex-wrap justify-center md:justify-start gap-2">
+                                        <span class="badge-spacex bg-spacex-blue/10 text-spacex-blue">${employee.department}</span>
+                                        <span class="badge-spacex ${employee.status === 'active' ? 'bg-spacex-success/10 text-spacex-success' : 'bg-spacex-gray/10 text-spacex-gray'}">${employee.status === 'active' ? '活跃' : '非活跃'}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="space-y-4">
+                                <div class="border-l-4 border-spacex-blue pl-4">
+                                    <h4 class="text-sm font-semibold text-spacex-black mb-2">个人信息</h4>
+                                    <div class="space-y-1 text-sm">
+                                        <p><span class="text-spacex-gray">部门:</span> <span class="text-spacex-black">${employee.department}</span></p>
+                                        <p><span class="text-spacex-gray">薪酬:</span> <span class="text-spacex-black">${employee.salary}</span></p>
+                                        <p><span class="text-spacex-gray">开始日期:</span> <span class="text-spacex-black">${employee.startDate || '灵活'}</span></p>
+                                    </div>
+                                </div>
+                                <div class="border-l-4 border-spacex-success pl-4">
+                                    <h4 class="text-sm font-semibold text-spacex-black mb-2">教育背景</h4>
+                                    <p class="text-sm text-spacex-black">${employee.education || '未指定'}</p>
+                                </div>
+                            </div>
+                            <div class="space-y-4">
+                                <div class="border-l-4 border-spacex-warning pl-4">
+                                    <h4 class="text-sm font-semibold text-spacex-black mb-2">核心技能</h4>
+                                    <div class="flex flex-wrap gap-1">
+                                        ${Array.isArray(employee.skills) && employee.skills.length > 0 ? 
+                                            employee.skills.map(skill => `<span class="badge-spacex bg-gray-100 text-spacex-gray text-xs">${skill}</span>`).join('') : 
+                                            '<p class="text-sm text-spacex-gray">未指定</p>'
+                                        }
+                                    </div>
+                                </div>
+                                <div class="border-l-4 border-spacex-info pl-4">
+                                    <h4 class="text-sm font-semibold text-spacex-black mb-2">工作经历</h4>
+                                    <div class="space-y-1 text-sm">
+                                        ${Array.isArray(employee.experience) && employee.experience.length > 0 ? 
+                                            employee.experience.map(exp => `<p class="text-spacex-black">${exp}</p>`).join('') : 
+                                            '<p class="text-spacex-gray">未指定</p>'
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="border-l-4 border-spacex-gray pl-4">
+                            <h4 class="text-sm font-semibold text-spacex-black mb-2">附加信息</h4>
+                            <div class="space-y-2 text-sm">
+                                <p><span class="text-spacex-gray">福利:</span> <span class="text-spacex-black">${Array.isArray(employee.benefits) ? employee.benefits.join('; ') : employee.benefits || '未指定'}</span></p>
+                                <p><span class="text-spacex-gray">备注:</span> <span class="text-spacex-black">${employee.notes || '未指定'}</span></p>
+                                <p><span class="text-spacex-gray">创建时间:</span> <span class="text-spacex-black">${new Date(employee.createdAt).toLocaleString()}</span></p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                document.querySelector('#viewEmployeeModal .btn-secondary').onclick = function() {
+                    editEmployee(id);
+                };
+                document.getElementById('viewEmployeeModal').classList.remove('hidden');
+            }
+        }
+
+        // 编辑员工
+        function editEmployee(id) {
+            alert('编辑功能开发中，敬请期待！');
+        }
+
+        // 删除员工
+        function deleteEmployee(id) {
+            if (confirm('确定要删除这个员工吗？此操作不可撤销。')) {
+                const success = EmployeeManager.deleteEmployee(id);
+                if (success) {
+                    loadEmployees();
+                    updateStats();
+                    alert('员工删除成功！');
+                } else {
+                    alert('删除失败，请重试。');
+                }
+            }
+        }
+
+        // 搜索员工
+        function searchEmployees() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const employees = EmployeeManager.getAllEmployees();
+            const filteredEmployees = employees.filter(emp => 
+                emp.name.toLowerCase().includes(searchTerm) ||
+                emp.position.toLowerCase().includes(searchTerm) ||
+                emp.department.toLowerCase().includes(searchTerm)
+            );
+            
+            const employeeGrid = document.getElementById('employeeGrid');
+            employeeGrid.innerHTML = '';
+            
+            if (filteredEmployees.length > 0) {
+                filteredEmployees.forEach((employee, index) => {
+                    const card = createEmployeeCard(employee, index);
+                    employeeGrid.appendChild(card);
+                });
+            } else {
+                employeeGrid.innerHTML = `
+                    <div class="col-span-full text-center py-12">
+                        <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-spacex-light-gray flex items-center justify-center">
+                            <i class="fa fa-search text-2xl text-spacex-gray"></i>
+                        </div>
+                        <h3 class="text-lg font-semibold text-spacex-black mb-2">未找到匹配的员工</h3>
+                        <p class="text-spacex-gray">尝试使用不同的搜索词</p>
+                    </div>
+                `;
+            }
+        }
+
+        // 导出数据
+        function exportData() {
+            EmployeeManager.exportData();
+        }
+
+        // 表单提交处理
+        document.getElementById('addEmployeeForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const employee = {
+                name: document.getElementById('employeeName').value,
+                position: document.getElementById('employeePosition').value,
+                department: document.getElementById('employeeDepartment').value,
+                salary: document.getElementById('employeeSalary').value,
+                skills: document.getElementById('employeeSkills').value.split(',').map(skill => skill.trim()).filter(Boolean),
+                education: document.getElementById('employeeEducation').value,
+                experience: document.getElementById('employeeExperience').value.split(';').map(exp => exp.trim()).filter(Boolean),
+                notes: document.getElementById('employeeNotes').value,
+                status: 'active'
+            };
+            
+            const success = EmployeeManager.addEmployee(employee);
+            if (success) {
+                closeModal('addEmployeeModal');
+                this.reset();
+                loadEmployees();
+                updateStats();
+                alert('员工添加成功！');
+            } else {
+                alert('添加失败，请重试。');
+            }
+        });
+
+        // 点击模态框外部关闭
+        window.addEventListener('click', function(e) {
+            const modals = ['addEmployeeModal', 'viewEmployeeModal'];
+            modals.forEach(modalId => {
+                const modal = document.getElementById(modalId);
+                if (e.target === modal) {
+                    closeModal(modalId);
+                }
+            });
+        });
+
+        // 页面加载完成后初始化
+        window.onload = function() {
+            initPage();
+            document.getElementById('lastSynced').textContent = new Date().toLocaleString();
+            document.getElementById('currentDate').textContent = new Date().toLocaleDateString();
+        };
+    </script>
+</body>
+</html>
